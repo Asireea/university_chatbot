@@ -1,0 +1,67 @@
+#main.py
+from langgraph.graph import StateGraph, END
+from orchestrator import router
+from agents import research_agent, therapist_agent, reviewer_agent
+class AgentState(dict):
+    user_input: str
+    agent_selected: str
+    agent_output: str
+def orchestrator_node(state: AgentState):
+    decision = router.invoke({"user_input": state["user_input"]})
+    print(f"Orchestrator selected: {decision}")
+    state["agent_selected"] = decision.strip().lower()
+    return state
+def agent_executor_node(state: AgentState):
+    agents = {
+        "research": research_agent,
+        "therapist": therapist_agent,
+        "reviewer": reviewer_agent,
+        }
+    agent = agents.get(state["agent_selected"], research_agent)
+    result = agent.invoke({
+        "topic": state["user_input"],
+        "problem": state["user_input"],
+        "output": state.get("agent_output", "")
+    })
+    print(f"{state['agent_selected'].capitalize()} Agent Output:\n{result}\n")
+    state["agent_output"] = result
+    return state
+graph = StateGraph(AgentState)
+graph.add_node("orchestrator", orchestrator_node) 
+graph.add_node("agent_executor", agent_executor_node)
+graph.set_entry_point("orchestrator")
+graph.add_edge("orchestrator", "agent_executor")
+graph.add_edge("agent_executor", END)
+workflow = graph.compile()
+def workflow_invoke(user_input: str) -> dict:
+    result = workflow.invoke({"user_input": user_input})
+    return result
+def run_workflow(request_data: dict) -> dict:
+    user_input = request_data.get("user_input", "").strip()
+    if not user_input:
+        return {"error": "Missing 'user_input' field."}
+    try:
+        result = workflow_invoke(user_input)
+        return {"agent_output": result.get("agent_output", "No output produced.")}
+    except Exception as e:
+        return {"error": str(e)}
+if __name__ == "__main__":
+    user_request = input("Enter your request: ")
+    result = workflow_invoke(user_request)
+    print("\nFinal Output:\n", result["agent_output"])
+#------------------------------------------------------------------------------
+#app.py
+from flask import Flask, request, jsonify, send_from_directory
+from main import run_workflow
+import os
+app = Flask(__name__)
+@app.route("/")
+def index():
+    return send_from_directory(os.getcwd(), "index.html")
+@app.route("/run", methods=["POST"])
+def run():
+    data = request.get_json()
+    result = run_workflow(data)
+    return jsonify(result)
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Python Workflow Web Interface</title>
+  <title>Continuous Chat Interface</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 2rem;
       background: #f8f9fa;
+      margin: 2rem;
     }
     #container {
       background: white;
@@ -17,14 +17,41 @@
       max-width: 600px;
       margin: auto;
     }
-    input, button {
-      padding: 0.5rem;
-      font-size: 1rem;
+    #chatBox {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #f1f3f5;
+      white-space: pre-wrap;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .message {
+      padding: 0.6rem 1rem;
+      border-radius: 12px;
+      max-width: 80%;
+    }
+    .user {
+      background: #007bff;
+      color: white;
+      align-self: flex-end;
+    }
+    .bot {
+      background: #e9ecef;
+      align-self: flex-start;
     }
     input {
       width: 70%;
+      padding: 0.5rem;
+      font-size: 1rem;
     }
     button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
       background: #007bff;
       color: white;
       border: none;
@@ -34,38 +61,57 @@
     button:hover {
       background: #0056b3;
     }
-    pre {
-      background: #f1f3f5;
-      padding: 1rem;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      margin-top: 1rem;
-    }
   </style>
 </head>
 <body>
   <div id="container">
-    <h2>Python Workflow Web Interface</h2>
-    <input id="userInput" placeholder="Enter your request" />
-    <button id="sendBtn">Run</button>
-    <pre id="output"></pre>
+    <h2>Chatbot Interface</h2>
+    <div id="chatBox"></div>
+    <input id="userInput" placeholder="Type your message..." />
+    <button id="sendBtn">Send</button>
   </div>
 
   <script>
-    document.getElementById("sendBtn").onclick = async () => {
-      const userInput = document.getElementById("userInput").value;
-      const outputEl = document.getElementById("output");
-      outputEl.textContent = "Processing...";
+    const chatBox = document.getElementById("chatBox");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      // Add user message to chat
+      appendMessage("user", message);
+      userInput.value = "";
+
+      // Show typing indicator
+      appendMessage("bot", "Thinking...");
 
       const response = await fetch("/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_input: userInput })
+        body: JSON.stringify({ user_input: message })
       });
 
       const data = await response.json();
-      outputEl.textContent = data.agent_output;
-    };
+
+      // Remove "Thinking..." and show bot's reply
+      chatBox.lastChild.remove();
+      appendMessage("bot", data.agent_output || data.error || "No response.");
+    }
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.className = `message ${sender}`;
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    sendBtn.onclick = sendMessage;
+    userInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
   </script>
 </body>
 </html>
