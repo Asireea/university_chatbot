@@ -4,7 +4,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 # ========== Research Agent ==========
 # creates an instance of Mistral model to handle the research tasks
-research_model = ChatOllama(model="mistral")  # this should be a general reasoning model
+research_model = ChatOllama(model="qwen")  # this should be a general reasoning model
 
 # text instructions the LLM receives
 research_prompt = ChatPromptTemplate.from_template("""
