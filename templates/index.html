@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniTBv Assistant</title>
+    <link rel="icon" href="/static/assets/logo/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <img src="/static/assets/logo/logounitbv.svg" alt="UniTBv Logo" class="logo-image">
+            <h2>University Assistant</h2>
+        </div>
+        <button class="new-chat-btn" id="new-chat">
+            <span class="material-symbols-outlined">add</span>
+            New Chat
+        </button>
+        <div class="quick-actions">
+            <p>Quick Actions</p>
+            <a href="#" class="action-link" data-message="Course Information">
+                <span class="material-symbols-outlined">menu_book</span>
+                Course Information
+            </a>
+            <a href="#" class="action-link" data-message="Academic Calendar">
+                <span class="material-symbols-outlined">calendar_month</span>
+                Academic Calendar
+            </a>
+            <a href="#" class="action-link" data-message="Campus Map">
+                <span class="material-symbols-outlined">map</span>
+                Campus Map
+            </a>
+            <a href="#" class="action-link" data-message="Student Services">
+                <span class="material-symbols-outlined">group</span>
+                Student Services
+            </a>
+        </div>
+    </aside>
+
+    <main class="chat-container">
+        <header class="chat-header">
+            <h3>Aris</h3>
+            <p>Academic Support Chatbot</p>
+            <div class="status">
+                <span class="status-dot"></span>
+                Online
+            </div>
+        </header>
+
+        <div class="chat-messages" id="chat-messages">
+
+            <div class="welcome-screen" id="welcome-screen">
+                <span class="material-symbols-outlined welcome-icon">school</span>
+                <h1>Welcome to the UniTBv Assistant</h1>
+                <p>Your guide to Transilvania University of Brașov.</p>
+                <div class="welcome-cards">
+                    <div class="welcome-card action-link" data-message="Find courses and check schedules">
+                        <span class="material-symbols-outlined">menu_book</span>
+                        Course Information
+                    </div>
+                    <div class="welcome-card action-link" data-message="What are the important deadlines?">
+                        <span class="material-symbols-outlined">calendar_month</span>
+                        Academic Calendar
+                    </div>
+                </div>
+            </div>
+
+            <div class="message bot-message">
+                <span class="material-symbols-outlined avatar">smart_toy</span>
+                <div class="message-content">
+                    <p>Hello! I'm the official assistant for <strong>Transilvania University of Brașov</strong>. I can help you with course information, academic deadlines, campus resources, and student services. How can I assist you today?</p>
+                    <span class="timestamp">07:14 PM</span>
+                </div>
+            </div>
+
+            </div>
+
+        <footer class="chat-input-area">
+            <form id="chat-form">
+                <input type="text" id="user-input" placeholder="Ask me about courses, deadlines, campus resources...">
+                <button type="submit" id="send-button">
+                    <span class="material-symbols-outlined">send</span>
+                </button>
+            </form>
+            <p class="input-hint">Press Enter to send • Shift+Enter for new line</p>
+        </footer>
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
