@@ -22,7 +22,7 @@ research_agent = research_prompt | research_model | StrOutputParser()
 
 
 # ========== Therapist Agent ==========
-therapist_model = ChatOllama(model="mistral") # employ a coder LLM here :)
+therapist_model = ChatOllama(model="qwen")
 
 therapist_prompt = ChatPromptTemplate.from_template("""
 You are a university school counselor. You will counsel the student about the following problem:
@@ -37,7 +37,7 @@ therapist_agent = therapist_prompt | therapist_model | StrOutputParser()
 
 
 # ========== Reviewer Agent ==========
-reviewer_model = ChatOllama(model="mistral") # idk, maybe general reasoning again??
+reviewer_model = ChatOllama(model="llama3") # idk, maybe general reasoning again??
 
 reviewer_prompt = ChatPromptTemplate.from_template("""
 You are a paper reviewer. Read the following input and provide constructive feedback:

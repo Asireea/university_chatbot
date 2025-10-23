@@ -1,6 +1,7 @@
 from langgraph.graph import StateGraph, END
 from orchestrator import router
 from agents import research_agent, therapist_agent, reviewer_agent
+from search_agent import invoke_search_agent
 
 # define a dictionary object that holds information as the workflow proceeds
 # the original user text input
@@ -17,47 +18,49 @@ class AgentState(dict):
 # calls the router to decide the agent, prints the chosen agent and saves the decision into a state
 
 def orchestrator_node(state: AgentState):
-    # calls the router and passes the user input to it
-    decision = router.invoke({"user_input": state["user_input"]})
-    # print the chosen agent -- used for debug purposes
+    user_text = state["user_input"].lower()
+
+    # Simple keyword heuristic before invoking the LLM
+    search_triggers = ["find", "locate", "search", "where", "show me", "pdf", "document", "page"]
+    if any(keyword in user_text for keyword in search_triggers):
+        decision = "search"
+    else:
+        # fallback to LLM router for everything else
+        decision = router.invoke({"user_input": state["user_input"]})
+
     print(f"Orchestrator selected: {decision}")
-    # cleans and stores the orchestrator’s decision (which agent called) in the workflow state
     state["agent_selected"] = decision.strip().lower()
-    # return the updated state for the next node
     return state
+
 
 
 # execute the chosen agent
 
 def agent_executor_node(state: AgentState):
-    # create a dictionary of all available agents
     agents = {
+        "search": invoke_search_agent,
         "research": research_agent,
         "therapist": therapist_agent,
         "reviewer": reviewer_agent,
-        }
-    # retrieves the agent object based on the orchestrator’s decision
-    # if no valid key is found, the default is research_agent 
-    # TODO: idk what could the default be? maybe smth else?
-    agent = agents.get(state["agent_selected"], research_agent)
-    # invoke the chosen agent
-    # the input dictionary consists of:
-        # topic - the original user input - the agent treats it as subject or context
-        # problem - also the original user input - a task to solve
-        # output - any previous agent output already stored in the state
-    # TODO: get rid of redundancy (see what agents use - either topic or problem - and clean it up to feed it to the agent)
-    result = agent.invoke({
-        "topic": state["user_input"],
-        "problem": state["user_input"],
-        "output": state.get("agent_output", "")
-    })
+    }
 
-    # prints the output and stores it in the state dictionary.
+    agent = agents.get(state["agent_selected"], research_agent)
+    user_input = state["user_input"]
+
+    # Handle callable vs LangChain pipeline
+    if callable(agent):
+        result = agent(user_input)
+    else:
+        result = agent.invoke({
+            "topic": user_input,
+            "problem": user_input,
+            "output": state.get("agent_output", "")
+        })
+
     print(f"{state['agent_selected'].capitalize()} Agent Output:\n{result}\n")
     state["agent_output"] = result
-
-    # return updated state
     return state
+
 
 
 # -------------- Build LangGraph --------------
