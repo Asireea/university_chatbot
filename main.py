@@ -20,14 +20,28 @@ class AgentState(dict):
 def orchestrator_node(state: AgentState):
     user_text = state["user_input"].lower()
 
-    # Simple keyword heuristic before invoking the LLM
-    search_triggers = ["find", "locate", "search", "where", "show me", "pdf", "document", "page"]
+    # 1. Define Search Triggers (Explicitly external resource requests)
+    search_triggers = ["search for", "look up", "pdf", "document", "website", "latest", "article", "news"]
+
+    # 2. Define Research Triggers (Explicitly conceptual/knowledge requests)
+    # These often indicate the need for a conceptual answer or deep dive.
+    research_triggers = ["what is", "how to", "explain", "define", "meaning", "difference between"]
+
+    # 3. Check for Search-Specific Keywords
     if any(keyword in user_text for keyword in search_triggers):
         decision = "search"
+    
+    # 4. Check for Research-Specific Keywords (Give this agent high priority)
+    elif any(keyword in user_text for keyword in research_triggers):
+        decision = "research" # <-- Directly invoke the Research Agent
+    
+    # 5. Fallback to LLM Router for everything else (or default to research/core agent)
     else:
-        # fallback to LLM router for everything else
-        decision = router.invoke({"user_input": state["user_input"]})
-
+        # If the query is complex but doesn't hit a keyword, let the LLM decide, 
+        # or just default to your Research Agent for maximum invocation.
+        # decision = router.invoke({"user_input": state["user_input"]}) 
+        decision = "research" # <-- Assuming "research" is your desired default agent for conceptual questions
+        
     print(f"Orchestrator selected: {decision}")
     state["agent_selected"] = decision.strip().lower()
     return state
