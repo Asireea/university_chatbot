@@ -40,7 +40,7 @@ therapist_agent = therapist_prompt | therapist_model | StrOutputParser()
 reviewer_model = ChatOllama(model="mistral") # idk, maybe general reasoning again??
 
 reviewer_prompt = ChatPromptTemplate.from_template("""
-You are a code reviewer. Read the following output and provide constructive feedback:
+You are a paper reviewer. Read the following input and provide constructive feedback:
 {output}
 """)
 
