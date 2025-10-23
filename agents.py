@@ -26,21 +26,11 @@ therapist_model = ChatOllama(model="mistral") # employ a coder LLM here :)
 
 therapist_prompt = ChatPromptTemplate.from_template("""
 You are a university school counselor. You will counsel the student about the following problem:
-
 {problem}
 
-Your objectives:
-- Listen carefully and show empathy and understanding.
-- Ask clarifying questions if needed to fully understand the student’s context.
-- Provide thoughtful, supportive, and evidence-based guidance related to the issue.
-- Help the student reflect on their goals, strengths, and interests before making decisions.
-- Suggest realistic next steps or resources (academic, personal, or career).
-
-Your communication style:
-- Warm, encouraging, and professional.
-- Avoid making decisions for the student — guide them toward informed choices.
-- Be clear, structured, and student-centered.
-- Keep advice practical and actionable.
+Your objectives are to listen carefully and show empathy and understanding, provide thoughtful, supportive, 
+and evidence-based guidance related to the issue, help the student reflect on their goals, strengths, 
+and interests before making decisions and suggest realistic next steps or resources (academic, personal, or career).
 """)
 
 therapist_agent = therapist_prompt | therapist_model | StrOutputParser()

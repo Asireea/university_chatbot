@@ -1,4 +1,33 @@
-#main.py
+# agents.py
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+research_model = ChatOllama(model="mistral")
+research_prompt = ChatPromptTemplate.from_template("""
+You are a research assistant. Find and summarize key information about this topic:
+{topic}
+""")
+research_agent = research_prompt | research_model | StrOutputParser()
+#------------------------------------------------------------------------------
+
+#orchestrator.py
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+router_model = ChatOllama(model="mistral")
+router_prompt = ChatPromptTemplate.from_template("""
+You are the Orchestrator. Your job is to decide which agent should handle the user's request.
+Options:
+- "research" for finding or summarizing information
+- "therapist" — for guiding students through academic, career, or personal study-related decisions and challenges
+- "reviewer" for checking and critiquing work
+User request: {user_input}
+Return only one word: research, therapist, or reviewer.
+""")
+router = router_prompt | router_model | StrOutputParser()
+#------------------------------------------------------------------------------
+
+# main.py
 from langgraph.graph import StateGraph, END
 from orchestrator import router
 from agents import research_agent, therapist_agent, reviewer_agent
@@ -7,11 +36,16 @@ class AgentState(dict):
     agent_selected: str
     agent_output: str
 def orchestrator_node(state: AgentState):
+    # calls the router and passes the user input to it
     decision = router.invoke({"user_input": state["user_input"]})
+    # print the chosen agent -- used for debug purposes
     print(f"Orchestrator selected: {decision}")
+    # cleans and stores the orchestrator’s decision (which agent called) in the workflow state
     state["agent_selected"] = decision.strip().lower()
+    # return the updated state for the next node
     return state
 def agent_executor_node(state: AgentState):
+    # create a dictionary of all available agents
     agents = {
         "research": research_agent,
         "therapist": therapist_agent,
@@ -27,7 +61,7 @@ def agent_executor_node(state: AgentState):
     state["agent_output"] = result
     return state
 graph = StateGraph(AgentState)
-graph.add_node("orchestrator", orchestrator_node) 
+graph.add_node("orchestrator", orchestrator_node)
 graph.add_node("agent_executor", agent_executor_node)
 graph.set_entry_point("orchestrator")
 graph.add_edge("orchestrator", "agent_executor")
@@ -50,7 +84,8 @@ if __name__ == "__main__":
     result = workflow_invoke(user_request)
     print("\nFinal Output:\n", result["agent_output"])
 #------------------------------------------------------------------------------
-#app.py
+
+# app.py
 from flask import Flask, request, jsonify, send_from_directory
 from main import run_workflow
 import os
