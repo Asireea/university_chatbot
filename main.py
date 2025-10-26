@@ -2,6 +2,7 @@ from langgraph.graph import StateGraph, END
 from orchestrator import router
 from agents import research_agent, therapist_agent, reviewer_agent
 from search_agent import invoke_search_agent
+from admittance_agent import admittance_agent
 
 # define a dictionary object that holds information as the workflow proceeds
 # the original user text input
@@ -27,6 +28,9 @@ def orchestrator_node(state: AgentState):
     # These often indicate the need for a conceptual answer or deep dive.
     research_triggers = ["what is", "how to", "explain", "define", "meaning", "difference between"]
 
+    # Define Admittance agent triggers
+    admittance_triggers = ["admittance", "admission", "admitted"]
+
     # 3. Check for Search-Specific Keywords
     if any(keyword in user_text for keyword in search_triggers):
         decision = "search"
@@ -34,6 +38,9 @@ def orchestrator_node(state: AgentState):
     # 4. Check for Research-Specific Keywords (Give this agent high priority)
     elif any(keyword in user_text for keyword in research_triggers):
         decision = "research" # <-- Directly invoke the Research Agent
+
+    elif any(keyword in user_text for keyword in admittance_triggers):
+        decision = "admittance"
     
     # 5. Fallback to LLM Router for everything else (or default to research/core agent)
     else:
@@ -56,6 +63,7 @@ def agent_executor_node(state: AgentState):
         "research": research_agent,
         "therapist": therapist_agent,
         "reviewer": reviewer_agent,
+        "admittance": admittance_agent,
     }
 
     agent = agents.get(state["agent_selected"], research_agent)
@@ -68,7 +76,8 @@ def agent_executor_node(state: AgentState):
         result = agent.invoke({
             "topic": user_input,
             "problem": user_input,
-            "output": state.get("agent_output", "")
+            "output": state.get("agent_output", ""),
+            "prompt": user_input
         })
 
     print(f"{state['agent_selected'].capitalize()} Agent Output:\n{result}\n")

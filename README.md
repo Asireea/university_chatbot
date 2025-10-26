@@ -6,6 +6,32 @@ This is a **demo project** of a university chatbot application built with Python
 
 ---
 
+## 🤖 Project Description
+
+Say hi to Aris, your virtual guide to Transilvania University of Brasov!
+Even if you are not a student (yet), Aris will help you with finding info about your desired faculty, helping you 
+get admitted and begin your journey in our university. 
+
+Moreover, if you are already a student, Aris can support you by giving you information, advice and feedback on your work
+if you ask him :)
+
+![Web Interface][web-interface]
+
+### Here are a few examples of what Aris can do:
+![General Research Example][general-research]
+*Some general research about different subjects*
+
+![Admission Help][admission-help]
+*Help you with admission information*
+
+![Document Finder][document-finder]
+*Help you find relevant documents and links*
+
+![School Counselor][school-counselor]
+*Be your virtual school counselor*
+
+> ⚠️ **Note:** many more functionalities to come later
+
 ## 🧩 Features
 
 * Interactive chatbot interface
@@ -132,3 +158,12 @@ Expect incomplete features, limited responses, and possible bugs.
 
 This project is for **university and personal learning use only**.
 Please do not use it in production environments.
+
+
+<!-- Markdown links -->
+
+[web-interface]: images/web_interface.png
+[general-research]: images/general-research.png
+[admission-help]: images/admission-bot.png
+[document-finder]: images/web_crawler_bot.png
+[school-counselor]: images/school_counselor_bot.png
