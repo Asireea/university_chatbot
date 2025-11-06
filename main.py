@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, END
 from orchestrator import router
-from agents import research_agent, therapist_agent, reviewer_agent
+from agents import research_agent, therapist_agent, reviewer_agent, cazare_agent
 from search_agent import invoke_search_agent
 from admittance_agent import admittance_agent
 from admittance_bot import get_admission_criteria_text
@@ -32,6 +32,8 @@ def orchestrator_node(state: AgentState):
     # Define Admittance agent triggers
     admittance_triggers = ["admittance", "admission", "admitted"]
 
+    cazare_triggers =["accomodation", "cazare", "housing", "camin", "dormitory", "canteen", "cantina", "administrator", "address", "adresa", "colina", "memo"]
+
     # 3. Check for Search-Specific Keywords
     if any(keyword in user_text for keyword in search_triggers):
         decision = "search"
@@ -42,6 +44,9 @@ def orchestrator_node(state: AgentState):
 
     elif any(keyword in user_text for keyword in admittance_triggers):
         decision = "admittance"
+    
+    elif any(keyword in user_text for keyword in cazare_triggers):
+        decision = "cazare"
     
     # 5. Fallback to LLM Router for everything else (or default to research/core agent)
     else:
@@ -94,6 +99,7 @@ def agent_executor_node(state: AgentState):
         "therapist": therapist_agent,
         "reviewer": reviewer_agent,
         "admittance": admittance_agent,
+        "cazare": cazare_agent,
     }
 
     agent_key = state["agent_selected"]
@@ -113,7 +119,8 @@ def agent_executor_node(state: AgentState):
             "topic": user_input,
             "problem": user_input,
             "output": state.get("agent_output", ""),
-            "prompt": user_input
+            "prompt": user_input,
+            "input": user_input
         })
 
     print(f"{state['agent_selected'].capitalize()} Agent Output:\n{result}\n")
