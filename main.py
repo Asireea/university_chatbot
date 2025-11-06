@@ -2,8 +2,8 @@ from langgraph.graph import StateGraph, END
 from orchestrator import router
 from agents import research_agent, therapist_agent, reviewer_agent
 from search_agent import invoke_search_agent
-# from admittance_agent import admittance_agent
-from admittance_bot import admittance_agent_wrapper
+from admittance_agent import admittance_agent
+from admittance_bot import get_admission_criteria_text
 
 # define a dictionary object that holds information as the workflow proceeds
 # the original user text input
@@ -54,7 +54,36 @@ def orchestrator_node(state: AgentState):
     state["agent_selected"] = decision.strip().lower()
     return state
 
+# -----------------------------------------------------------------------------------------------------------------------
+def admittance_agent_wrapper(user_input: str, admittance_agent_chain):
+    # 1. Get the raw admission text and metadata
+    scrape_result = get_admission_criteria_text(user_input)
 
+    if "error" in scrape_result:
+        return scrape_result["error"]
+
+    extracted_text = scrape_result["text"]
+    metadata = scrape_result["metadata"]
+
+    # 2. Inject the extracted text into the prompt context for the LLM
+    # This structure is necessary because your existing template only accepts {prompt}
+    # and expects the criteria document to be part of the prompt.
+    final_prompt_for_llm = (
+        f"DOCUMENT (Admission Criteria for {metadata['faculty']} - {metadata['program'].capitalize()}):\n\n"
+        f"--- START DOCUMENT ---\n{extracted_text}\n--- END DOCUMENT ---\n\n"
+        f"USER QUESTION: {user_input}"
+    )
+
+    # 3. Invoke the LangChain Agent
+    summary = admittance_agent_chain.invoke({
+        "prompt": final_prompt_for_llm 
+    })
+
+    # Optionally, you can append the source URL to the end of the summary
+    summary += f"\n\nSource of information: {metadata['source_url']}"
+
+    return summary
+# -----------------------------------------------------------------------------------------------------------------------
 
 # execute the chosen agent
 
