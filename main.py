@@ -2,7 +2,8 @@ from langgraph.graph import StateGraph, END
 from orchestrator import router
 from agents import research_agent, therapist_agent, reviewer_agent
 from search_agent import invoke_search_agent
-from admittance_agent import admittance_agent
+# from admittance_agent import admittance_agent
+from admittance_bot import admittance_agent_wrapper
 
 # define a dictionary object that holds information as the workflow proceeds
 # the original user text input
@@ -66,13 +67,19 @@ def agent_executor_node(state: AgentState):
         "admittance": admittance_agent,
     }
 
-    agent = agents.get(state["agent_selected"], research_agent)
+    agent_key = state["agent_selected"]
+    agent = agents.get(agent_key, research_agent)
     user_input = state["user_input"]
 
-    # Handle callable vs LangChain pipeline
-    if callable(agent):
+    # --- MODIFICATION HERE ---
+    if agent_key == "admittance":
+        # Call the custom wrapper function, passing the user input
+        # and the LangChain pipeline itself.
+        result = admittance_agent_wrapper(user_input, admittance_agent)
+    elif callable(agent):
         result = agent(user_input)
     else:
+        # Existing logic for other LangChain pipelines
         result = agent.invoke({
             "topic": user_input,
             "problem": user_input,
