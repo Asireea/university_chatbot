@@ -17,7 +17,9 @@ if you ask him :)
 
 ![Web Interface][web-interface]
 
+
 ### Here are a few examples of what Aris can do:
+
 ![General Research Example][general-research]
 *Some general research about different subjects*
 
@@ -29,6 +31,12 @@ if you ask him :)
 
 ![School Counselor][school-counselor]
 *Be your virtual school counselor*
+
+![Taxes][taxes-helper]
+*Help you with information about taxes at your desired faculty*
+
+![Accomodations][accomodations-helper]
+*Help you with any information about accomodations*
 
 > ⚠️ **Note:** many more functionalities to come later
 
@@ -167,3 +175,5 @@ Please do not use it in production environments.
 [admission-help]: images/admission-bot.png
 [document-finder]: images/web_crawler_bot.png
 [school-counselor]: images/school_counselor_bot.png
+[taxes-helper]: images/taxes_bot.png
+[accomodations-helper]: images/accomodations_bot.png
