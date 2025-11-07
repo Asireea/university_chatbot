@@ -13,6 +13,8 @@ class AgentState(dict):
     user_input: str
     agent_selected: str
     agent_output: str
+    # --- New Field for Memory ---
+    chat_history: list # Stores a list of (user_input, agent_output) tuples
 
 
 # ----------------------- define graph nodes -----------------------
@@ -112,7 +114,10 @@ def agent_executor_node(state: AgentState):
     agent = agents.get(agent_key, research_agent)
     user_input = state["user_input"]
 
-    # --- MODIFICATION HERE ---
+    # Get the history from the state
+    history = state.get("chat_history", []) # Get the current history
+
+
     if agent_key == "admittance":
         # Call the custom wrapper function, passing the user input
         # and the LangChain pipeline itself.
@@ -126,10 +131,16 @@ def agent_executor_node(state: AgentState):
             "problem": user_input,
             "output": state.get("agent_output", ""),
             "prompt": user_input,
-            "input": user_input
+            "input": user_input,
+            "chat_history": history # < ------ history passed for saving chat history
         })
 
     print(f"{state['agent_selected'].capitalize()} Agent Output:\n{result}\n")
+    
+    # Update the state with the new input/output pair
+    new_history = history + [(user_input, result)]
+    state["chat_history"] = new_history # update the hisotry in state
+    
     state["agent_output"] = result
     return state
 
@@ -158,11 +169,17 @@ workflow = graph.compile()
 
 # ----------------------- helper functions for Flask -----------------------
 
-def workflow_invoke(user_input: str) -> dict:
+def workflow_invoke(user_input: str, history: list) -> dict:
     """
-    Runs the workflow and returns the full result dictionary.
+     Runs the workflow, accepting the prior history and returning the full result.
     """
-    result = workflow.invoke({"user_input": user_input})
+    # Start the workflow with the previous state's history
+    initial_state = {
+        "user_input": user_input, 
+        "chat_history": history
+    }
+    result = workflow.invoke(initial_state)
+    
     return result
 
 
@@ -172,12 +189,21 @@ def run_workflow(request_data: dict) -> dict:
     invokes the workflow, and returns a JSON-ready dict.
     """
     user_input = request_data.get("user_input", "").strip()
+    
+    # Expect history to be passed in the request, or default to empty list
+    history = request_data.get("chat_history", []) 
+
     if not user_input:
         return {"error": "Missing 'user_input' field."}
 
     try:
-        result = workflow_invoke(user_input)
-        return {"agent_output": result.get("agent_output", "No output produced.")}
+        result = workflow_invoke(user_input, history)
+
+        return {
+            "agent_output": result.get("agent_output", "No output produced."),
+            "chat_history": result.get("chat_history", []) 
+        }
+
     except Exception as e:
         return {"error": str(e)}
 

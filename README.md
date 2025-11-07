@@ -46,6 +46,7 @@ if you ask him :)
 * Uses **Ollama** models: `llama3` and `qwen`
 * Simple web interface served via Flask
 * Designed for educational and testing purposes
+* Now with memory
 
 ---
 
