@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, END
 from orchestrator import router
-from agents import research_agent, therapist_agent, reviewer_agent, cazare_agent
+from agents import research_agent, therapist_agent, reviewer_agent, cazare_agent, taxations_agent
 from search_agent import invoke_search_agent
 from admittance_agent import admittance_agent
 from admittance_bot import get_admission_criteria_text
@@ -27,12 +27,14 @@ def orchestrator_node(state: AgentState):
 
     # 2. Define Research Triggers (Explicitly conceptual/knowledge requests)
     # These often indicate the need for a conceptual answer or deep dive.
-    research_triggers = ["what is", "how to", "explain", "define", "meaning", "difference between"]
+    research_triggers = ["explain", "define", "meaning", "difference between"]
 
     # Define Admittance agent triggers
     admittance_triggers = ["admittance", "admission", "admitted"]
 
     cazare_triggers =["accomodation", "cazare", "housing", "camin", "dormitory", "canteen", "cantina", "administrator", "address", "adresa", "colina", "memo"]
+
+    taxations_triggers = ["taxes", "tax", "fees", "fee", "taxa"]
 
     # 3. Check for Search-Specific Keywords
     if any(keyword in user_text for keyword in search_triggers):
@@ -47,6 +49,9 @@ def orchestrator_node(state: AgentState):
     
     elif any(keyword in user_text for keyword in cazare_triggers):
         decision = "cazare"
+
+    elif any(keyword in user_text for keyword in taxations_triggers):
+        decision = "taxations"
     
     # 5. Fallback to LLM Router for everything else (or default to research/core agent)
     else:
@@ -100,6 +105,7 @@ def agent_executor_node(state: AgentState):
         "reviewer": reviewer_agent,
         "admittance": admittance_agent,
         "cazare": cazare_agent,
+        "taxations": taxations_agent
     }
 
     agent_key = state["agent_selected"]

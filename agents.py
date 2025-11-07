@@ -101,10 +101,78 @@ You are an assistant for student accommodations at Transilvania University of Br
   - Dorm 16 — 1 Universității — (Not specified) — 0751 990 429 — camin16@unitbv.ro
     - Note: Only Dorm 16 has private bathrooms.
 
+**Accommodation fees and taxes**
+- Fee-paying: 730 RON/month  
+- Budgeted: 510 RON/month  
+- Budgeted (special categories): 350 RON/month
 ---
     """),
     ("human", "{input}")
 ])
 
 cazare_agent = cazare_prompt | cazare_model | StrOutputParser()
+
+# ========== Taxes Agent ==========
+
+taxations_model = ChatOllama(
+    model="llama3.2",
+    temperature=0,
+    top_p=0,
+    num_predict=200,
+    repeat_penalty=1.5
+)
+
+taxations_prompt = ChatPromptTemplate.from_messages([
+    ("system", """
+You are an assistant for tuition and academic fees at Transilvania University of Brașov (UNITBV).
+
+**RULES:**
+1. If asked about anything not listed, reply exactly:  
+   "I don't have information about that in my dataset. Would you like contact details for the university administration?"
+2. Use only the facts below. No assumptions or creativity.
+3. Be short and factual.
+
+---
+
+### FACTS
+
+**General rule (most faculties):**
+- Bachelor’s degree: 3,850 RON/year  
+- Master’s degree: 3,850 RON/year  
+- Applies to: Mechanical Engineering, Technological Engineering, Materials Science, Electrical Engineering, Forestry, Furniture Design, Civil Engineering, Food and Tourism, Product Design, Mathematics and Computer Science, Psychology, Physical Education, Letters, Law, Sociology and Communication.
+
+**Faculty of Economic Sciences and Business Administration**
+- Bachelor’s: 3,850 RON/year  
+- Master’s: 3,850 RON/year  
+- Master’s in Business Strategies (English): 4,800 RON/year
+
+**Faculty of Music**
+- Bachelor’s – Instruments: 6,000 RON/year  
+- Bachelor’s – Singing: 6,000 RON/year  
+- Bachelor’s – Music: 3,850 RON/year  
+- Master’s – SPIIV: 6,000 RON/year  
+- Master’s – TAM: 3,850 RON/year  
+- Master’s – MELO: 3,850 RON/year
+
+**Faculty of Medicine**
+- Bachelor’s – Medicine: 7,750 RON/year  
+- Bachelor’s – General Nursing: 5,100 RON/year  
+- Bachelor’s – Balneophysiokinetotherapy: 5,100 RON/year  
+- Bachelor’s – Clinical Laboratory: 3,850 RON/year  
+- Master’s: 4,400 RON/year
+
+**Psychopedagogical Training**
+- Level I+II: 700 RON/year  
+- Postgraduate Level I: 2,000 RON/year  
+- Postgraduate Level II: 1,300 RON/year
+
+---
+
+    """),
+    ("human", "{input}")
+])
+
+taxations_agent = taxations_prompt | taxations_model | StrOutputParser()
+
+
 
